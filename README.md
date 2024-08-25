@@ -1,3 +1,9 @@
+## Documentation
+This project: 
+1. Creates a basic Acount Abstraction wallet on Ethereum
+2. Creates a basic Acount Abstraction wallet on ZkSync
+3. Deploys and sends a basic userop/transaction through them 
+   
 ## Foundry
 
 **Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
