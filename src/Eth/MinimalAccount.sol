@@ -45,7 +45,7 @@ contract MinimalAccount is IAccount, Ownable {
      */
     function execute(address dest, uint256 value, bytes calldata functionData) external requireFromEntryPointOrOwner {
         (bool success, bytes memory result) = dest.call{value: value}(functionData);
-        if(!success) {
+        if (!success) {
             revert MinimalAccount_CallFailed(result);
         }
     }
