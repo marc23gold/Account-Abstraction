@@ -14,7 +14,7 @@ contract MimimalAccountScript is Script {
 
         vm.startBroadcast();
         MinimalAccount minimalAccount = new MinimalAccount(config.account);
-        minimalAccount.transferOwnership(msg.sender);
+        minimalAccount.transferOwnership(config.account);
         vm.stopBroadcast();
         return (helperConfig, minimalAccount);
     }

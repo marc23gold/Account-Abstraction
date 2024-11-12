@@ -4,14 +4,39 @@ pragma solidity ^0.8.24;
 import {Script} from "forge-std/Script.sol";
 import {MinimalAccount} from "../src/Eth/MinimalAccount.sol";
 import {PackedUserOperation} from "lib/account-abstraction/contracts/interfaces/PackedUserOperation.sol";
+import {HelperConfig} from "./HelperConfig.s.sol";
+import {IEntryPoint} from "lib/account-abstraction/contracts/interfaces/IEntryPoint.sol";
+import {MessageHashUtils} from "lib/openzeppelin-contracts/contracts/utils/cryptography/MessageHashUtils.sol";
 
 contract SendPackedUserOp is Script {
+    using MessageHashUtils for bytes32;
+
     function run() public {}
 
-    function generateUserOperation() public returns (PackedUserOperation memory) {
+    function generateUserOperation(
+        bytes memory callData,
+        HelperConfig.NetworkConfig memory config,
+        address minimalAccount
+    ) public view returns (PackedUserOperation memory) {
         //1. Generates the unsigned data
+        uint256 nonce = vm.getNonce(minimalAccount) - 1;
+        PackedUserOperation memory userOp = _generateUnsignedData(callData, minimalAccount, nonce);
+        //2. Get the userOp hash
+        bytes32 userOpHash = IEntryPoint(config.entryPoint).getUserOpHash(userOp);
+        bytes32 digest = userOpHash.toEthSignedMessageHash();
 
-        //2. Sign the data and return it
+        //3. sign the hash
+        uint8 v;
+        bytes32 r;
+        bytes32 s;
+        uint256 ANVIL_DEFAULT_KEY = 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80;
+        if (block.chainid == 31337) {
+            (v, r, s) = vm.sign(config.account, digest);
+        } else {
+            (v, r, s) = vm.sign(config.account, digest);
+        }
+        userOp.signature = abi.encodePacked(v, r, s); //Note the order
+        return userOp;
     }
 
     function _generateUnsignedData(bytes memory callData, address sender, uint256 nonce)
